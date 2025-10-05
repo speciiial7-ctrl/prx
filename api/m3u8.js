@@ -9,7 +9,7 @@ export default function handler(req, res) {
 #EXT-X-MEDIA-SEQUENCE:0
 #EXT-X-ALLOW-CACHE:NO
 
-#EXTINF:10.0,
+#EXTINF:10.0, LIVE
 https://prx-roan.vercel.app/api/proxy?url=${encodeURIComponent(ts)}
 `;
 
