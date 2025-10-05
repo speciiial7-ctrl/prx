@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TS → M3U8 Generator</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; }
+  input, button { width: 100%; padding: 10px; margin: 5px 0; font-size: 16px; }
+  textarea { width: 100%; padding: 10px; height: 80px; font-size: 14px; }
+</style>
+</head>
+<body>
+<h1>TS → M3U8 Generator</h1>
+<p>Paste your TS link below and get a ready-to-use M3U8 URL:</p>
+<input type="text" id="tsInput" placeholder="Paste your .ts link here" />
+<button onclick="generateM3U8()">Generate M3U8 Link</button>
+<textarea id="output" readonly placeholder="Your M3U8 link will appear here"></textarea>
+
+<script>
+function generateM3U8() {
+  const tsLink = document.getElementById('tsInput').value.trim();
+  if (!tsLink) {
+    alert('Please enter a TS link.');
+    return;
+  }
+
+  // Replace with your Vercel proxy domain
+  const proxyDomain = 'https://prx-roan.vercel.app';
+  const m3u8Link = `${proxyDomain}/api/m3u8?ts=${encodeURIComponent(tsLink)}`;
+
+  document.getElementById('output').value = m3u8Link;
+}
+</script>
+</body>
+</html>
