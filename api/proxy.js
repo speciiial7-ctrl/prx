@@ -6,7 +6,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Pass Range headers if player requests partial content
+    // Pass Range headers if requested by the player
     const rangeHeader = req.headers['range'];
     const headers = {
       "User-Agent": "VLC/3.0.19 LibVLC/3.0.19",
@@ -17,22 +17,25 @@ export default async function handler(req, res) {
 
     const response = await fetch(target, { headers });
 
-    // Forward headers from original response
-    if (response.headers.get("content-type"))
-      res.setHeader("Content-Type", response.headers.get("content-type"));
+    // Forward Content-Type (or fallback) and other headers
+    res.setHeader(
+      "Content-Type",
+      response.headers.get("content-type") || "video/MP2T"
+    );
     if (response.headers.get("content-length"))
       res.setHeader("Content-Length", response.headers.get("content-length"));
     if (response.headers.get("content-range"))
       res.setHeader("Content-Range", response.headers.get("content-range"));
 
+    // Enable CORS
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "*");
 
-    // If partial content, set status
+    // Partial content support
     if (response.status === 206) res.status(206);
 
-    // Stream directly without buffering
+    // Stream directly to client without buffering
     const reader = response.body.getReader();
     const stream = new ReadableStream({
       start(controller) {
