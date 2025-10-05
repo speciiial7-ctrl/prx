@@ -1,11 +1,12 @@
 export default async function handler(req, res) {
   const target = req.query.url;
   if (!target) {
-    res.status(400).send("Missing ?url= parameter");
+    res.status(400).send("Missing ?url parameter");
     return;
   }
 
   try {
+    // Fetch the .ts segment from the IPTV server
     const response = await fetch(target, {
       headers: {
         "User-Agent": "VLC/3.0.19 LibVLC/3.0.19",
@@ -17,18 +18,28 @@ export default async function handler(req, res) {
       },
     });
 
+    // Pass through content headers and enable CORS
+    res.setHeader("Content-Type", response.headers.get("content-type") || "video/MP2T");
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "*");
 
-    if (response.headers.get("content-type"))
-      res.setHeader("Content-Type", response.headers.get("content-type"));
-    if (response.headers.get("content-length"))
-      res.setHeader("Content-Length", response.headers.get("content-length"));
+    // Stream the response to the client without buffering
+    const reader = response.body.getReader();
 
-    const arrayBuffer = await response.arrayBuffer();
-    res.status(response.status).send(Buffer.from(arrayBuffer));
+    function push() {
+      reader.read().then(({ done, value }) => {
+        if (done) {
+          res.end();
+          return;
+        }
+        res.write(Buffer.from(value));
+        push();
+      });
+    }
+    push();
+
   } catch (err) {
-    res.status(500).send("Proxy fetch error: " + err.message);
+    res.status(500).send("Proxy error: " + err.message);
   }
 }
